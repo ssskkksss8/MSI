@@ -18,16 +18,15 @@ public class CourseChoosing {
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumns({
-        @JoinColumn(name = "course_id", referencedColumnName = "course_id"),
-        @JoinColumn(name = "teacher_id", referencedColumnName = "teacher_id")
+    @JoinColumn(name = "course_id", referencedColumnName = "course_id"),
+    @JoinColumn(name = "teacher_id", referencedColumnName = "teacher_id")
     })
     private CourseOffering courseOffering;
 
     @Column(nullable = false)
     private int chosenYear;
-
     @Min(0)
     @Max(100)
     private Integer score;

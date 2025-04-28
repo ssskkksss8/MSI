@@ -1,14 +1,9 @@
 package com.scut.cms.controller;
 
-import com.scut.cms.model.Course;
-import com.scut.cms.model.CourseOffering;
-import com.scut.cms.model.Teacher;
-import com.scut.cms.repository.CourseOfferingRepository;
-import com.scut.cms.repository.CourseRepository;
-import com.scut.cms.repository.TeacherRepository;
+import com.scut.cms.model.*;
+import com.scut.cms.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.scut.cms.model.CourseOfferingId;
 
 import java.util.List;
 
@@ -43,19 +38,19 @@ public class CourseOfferingController {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found: " + teacherId));
 
+        CourseOfferingId offeringId = new CourseOfferingId(courseId, teacherId);
         CourseOffering offering = new CourseOffering();
-        
-        // Устанавливаем составной ключ
-        CourseOfferingId courseOfferingId = new CourseOfferingId(course, teacher);
-        offering.setId(courseOfferingId); // Устанавливаем составной ключ в объект
-        
+        offering.setId(offeringId);
+        offering.setCourse(course);
+        offering.setTeacher(teacher);
         offering.setYear(year);
 
         return courseOfferingRepository.save(offering);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteCourseOffering(@PathVariable Long id) {
+    @DeleteMapping
+    public void deleteCourseOffering(@RequestParam String courseId, @RequestParam String teacherId) {
+        CourseOfferingId id = new CourseOfferingId(courseId, teacherId);
         courseOfferingRepository.deleteById(id);
     }
 }

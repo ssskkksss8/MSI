@@ -4,25 +4,33 @@ import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
-
-
 @Embeddable
 public class CourseOfferingId implements Serializable {
-    @ManyToOne
-    @JoinColumn(name = "course_id")
-    private Course course;
 
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
-    private Teacher teacher;
+    private String courseId;
+    private String teacherId;
 
     public CourseOfferingId() {}
 
-    public CourseOfferingId(Course course, Teacher teacher) {
-        this.course = course;
-        this.teacher = teacher;
+    public CourseOfferingId(String courseId, String teacherId) {
+        this.courseId = courseId;
+        this.teacherId = teacherId;
+    }
+
+    public String getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(String courseId) {
+        this.courseId = courseId;
+    }
+
+    public String getTeacherId() {
+        return teacherId;
+    }
+
+    public void setTeacherId(String teacherId) {
+        this.teacherId = teacherId;
     }
 
     @Override
@@ -30,12 +38,12 @@ public class CourseOfferingId implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CourseOfferingId that = (CourseOfferingId) o;
-        return course.equals(that.course) && teacher.equals(that.teacher);
+        return Objects.equals(courseId, that.courseId) &&
+               Objects.equals(teacherId, that.teacherId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(course, teacher);
+        return Objects.hash(courseId, teacherId);
     }
-
 }

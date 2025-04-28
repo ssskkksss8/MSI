@@ -21,6 +21,6 @@ public class Teacher {
     @NotBlank(message = "Name cannot be empty")
     private String name;
 
-    @OneToMany(mappedBy = "teacher")
-    private List<Course> courses;
+    //@OneToMany(mappedBy = "teacher")
+    //private List<CourseOffering> courseOfferings;
 }

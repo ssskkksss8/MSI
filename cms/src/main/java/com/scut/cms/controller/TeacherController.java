@@ -46,7 +46,6 @@ public class TeacherController {
                 .orElseThrow(() -> new RuntimeException("Teacher with this ID not found: " + id));
 
         teacher.setName(teacherDetails.getName());
-        teacher.setCourses(teacherDetails.getCourses());
 
         return teacherRepository.save(teacher);
     }
