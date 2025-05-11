@@ -4,13 +4,13 @@ import com.scut.cms.model.CourseChoosing;
 import com.scut.cms.model.CourseOffering;
 import com.scut.cms.model.CourseOfferingId;
 import com.scut.cms.model.Student;
-import com.scut.cms.model.Course;
-import com.scut.cms.model.Teacher;
 import com.scut.cms.repository.CourseChoosingRepository;
 import com.scut.cms.repository.CourseOfferingRepository;
 import com.scut.cms.repository.StudentRepository;
 import com.scut.cms.repository.CourseRepository;
 import com.scut.cms.repository.TeacherRepository;
+import com.scut.cms.service.StudentService; 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,20 +23,23 @@ public class CourseChoosingController {
     private final CourseChoosingRepository courseChoosingRepository;
     private final StudentRepository studentRepository;
     private final CourseOfferingRepository courseOfferingRepository;
-    private final CourseRepository courseRepository;  // Добавлен CourseRepository
-    private final TeacherRepository teacherRepository;  // Добавлен TeacherRepository
+    private final CourseRepository courseRepository;
+    private final TeacherRepository teacherRepository;
+    private final StudentService studentService;          
 
     @Autowired
     public CourseChoosingController(CourseChoosingRepository courseChoosingRepository,
-                                     StudentRepository studentRepository,
-                                     CourseOfferingRepository courseOfferingRepository,
-                                     CourseRepository courseRepository,  // Добавлен CourseRepository в конструктор
-                                     TeacherRepository teacherRepository) {  // Добавлен TeacherRepository в конструктор
+                                    StudentRepository studentRepository,
+                                    CourseOfferingRepository courseOfferingRepository,
+                                    CourseRepository courseRepository,
+                                    TeacherRepository teacherRepository,
+                                    StudentService studentService) {           
         this.courseChoosingRepository = courseChoosingRepository;
         this.studentRepository = studentRepository;
         this.courseOfferingRepository = courseOfferingRepository;
-        this.courseRepository = courseRepository;  // Присвоение поля
-        this.teacherRepository = teacherRepository;  // Присвоение поля
+        this.courseRepository = courseRepository;
+        this.teacherRepository = teacherRepository;
+        this.studentService = studentService;            
     }
 
     @GetMapping
@@ -44,25 +47,49 @@ public class CourseChoosingController {
         return courseChoosingRepository.findAll();
     }
 
+    @GetMapping("/by-course")
+    public List<Student> getStudentsByCourseAndYear(@RequestParam String courseId,
+                                                    @RequestParam int year) {
+        return courseChoosingRepository.findByCourseOffering_Course_IdAndChosenYear(courseId, year)
+                                      .stream()
+                                      .map(CourseChoosing::getStudent)
+                                      .toList();
+    }
+
+
+    @GetMapping("/average-score")
+    public Double getAverageScore(@RequestParam String courseId) {
+        return courseChoosingRepository.calculateAverageScoreByCourseId(courseId);
+    }
+
+    @GetMapping("/filter")
+    public List<Student> filterStudentsByScore(
+            @RequestParam String courseId,
+            @RequestParam int score,
+            @RequestParam boolean greaterThan
+    ) {
+        return studentService.getStudentByCourseAndScore(courseId, score, greaterThan);
+    }
+
     @PostMapping
     public CourseChoosing createCourseChoosing(@RequestParam String studentId,
-                                                @RequestParam String courseId,  // Используем courseId и teacherId
-                                                @RequestParam String teacherId, // для построения CourseOfferingId
-                                                @RequestParam int chosenYear) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found: " + studentId));
+                                               @RequestParam String courseId,
+                                               @RequestParam String teacherId,
+                                               @RequestParam int chosenYear) {
+        var student = studentRepository.findById(studentId)
+            .orElseThrow(() -> new RuntimeException("Student not found: " + studentId));
 
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found: " + courseId));
+        var course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new RuntimeException("Course not found: " + courseId));
 
-        Teacher teacher = teacherRepository.findById(teacherId)
-                .orElseThrow(() -> new RuntimeException("Teacher not found: " + teacherId));
+        var teacher = teacherRepository.findById(teacherId)
+            .orElseThrow(() -> new RuntimeException("Teacher not found: " + teacherId));
 
-        CourseOfferingId offeringId = new CourseOfferingId(courseId, teacherId);
-        CourseOffering offering = courseOfferingRepository.findById(offeringId)
-                .orElseThrow(() -> new RuntimeException("Course Offering not found: " + offeringId));
+        var offeringId = new CourseOfferingId(courseId, teacherId);
+        var offering = courseOfferingRepository.findById(offeringId)
+            .orElseThrow(() -> new RuntimeException("Course Offering not found: " + offeringId));
 
-        CourseChoosing choosing = new CourseChoosing();
+        var choosing = new CourseChoosing();
         choosing.setStudent(student);
         choosing.setCourseOffering(offering);
         choosing.setChosenYear(chosenYear);
@@ -72,8 +99,8 @@ public class CourseChoosingController {
 
     @PutMapping("/{id}/score")
     public CourseChoosing updateScore(@PathVariable Long id, @RequestParam int score) {
-        CourseChoosing choosing = courseChoosingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("CourseChoosing not found: " + id));
+        var choosing = courseChoosingRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CourseChoosing not found: " + id));
 
         choosing.setScore(score);
         return courseChoosingRepository.save(choosing);
