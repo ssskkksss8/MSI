@@ -1,216 +1,68 @@
 import axios from 'axios';
-import { Student, Course, Teacher, CourseChoosing } from '../types';
+import { toast } from 'react-toastify';
 
-const api = axios.create({
-  baseURL: '/api',
+export const api = axios.create({
+  baseURL: '/api', // Adjust based on your backend configuration
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
-// Authentication
-export const login = async (username: string, password: string) => {
-  const response = await axios.post('/auth/login', { username, password });
-  return response.data;
-};
+// Add a request interceptor to attach the token to all requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-export const register = async (studentId: string, password: string) => {
-  const response = await axios.post('/auth/register', null, {
-    params: { studentId, password }
-  });
-  return response.data;
-};
+// Add a response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const { status, data } = error.response;
+      
+      switch (status) {
+        case 400:
+          toast.error(`Bad Request: ${data}`);
+          break;
+        case 401:
+          toast.error('Unauthorized: Please log in again');
+          // Redirect to login if unauthorized
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          break;
+        case 403:
+          toast.error('Forbidden: You do not have permission to access this resource');
+          break;
+        case 404:
+          toast.error('Not Found: The requested resource does not exist');
+          break;
+        case 500:
+          toast.error('Server Error: Please try again later');
+          break;
+        default:
+          toast.error(`Error ${status}: ${data}`);
+          break;
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      toast.error('Network Error: Unable to connect to the server');
+    } else {
+      // Something happened in setting up the request
+      toast.error(`Error: ${error.message}`);
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
-// Students API
-export const getStudents = async () => {
-  const response = await api.get<Student[]>('/students');
-  return response.data;
-};
-
-export const getStudent = async (id: string) => {
-  const response = await api.get<Student>(`/students/${id}`);
-  return response.data;
-};
-
-export const createStudent = async (student: Omit<Student, 'id'>) => {
-  const response = await api.post<Student>('/students', student);
-  return response.data;
-};
-
-export const updateStudent = async (id: string, student: Partial<Student>) => {
-  const response = await api.put<Student>(`/students/${id}`, student);
-  return response.data;
-};
-
-export const deleteStudent = async (id: string) => {
-  await api.delete(`/students/${id}`);
-};
-
-export const searchStudents = async (name: string) => {
-  const response = await api.get<Student[]>('/students/search', {
-    params: { name }
-  });
-  return response.data;
-};
-
-// Courses API
-export const getCourses = async () => {
-  const response = await api.get<Course[]>('/courses');
-  return response.data;
-};
-
-export const getCourse = async (id: string) => {
-  const response = await api.get<Course>(`/courses/${id}`);
-  return response.data;
-};
-
-export const createCourse = async (course: Omit<Course, 'id'>) => {
-  const response = await api.post<Course>('/courses', course);
-  return response.data;
-};
-
-export const updateCourse = async (id: string, course: Partial<Course>) => {
-  const response = await api.put<Course>(`/courses/${id}`, course);
-  return response.data;
-};
-
-export const deleteCourse = async (id: string) => {
-  await api.delete(`/courses/${id}`);
-};
-
-// Teachers API
-export const getTeachers = async () => {
-  const response = await api.get<Teacher[]>('/teachers');
-  return response.data;
-};
-
-export const getTeacher = async (id: string) => {
-  const response = await api.get<Teacher>(`/teachers/${id}`);
-  return response.data;
-};
-
-export const createTeacher = async (teacher: Omit<Teacher, 'id'>) => {
-  const response = await api.post<Teacher>('/teachers', teacher);
-  return response.data;
-};
-
-export const updateTeacher = async (id: string, teacher: Partial<Teacher>) => {
-  const response = await api.put<Teacher>(`/teachers/${id}`, teacher);
-  return response.data;
-};
-
-export const deleteTeacher = async (id: string) => {
-  await api.delete(`/teachers/${id}`);
-};
-
-export const searchTeachers = async (name: string) => {
-  const response = await api.get<Teacher[]>('/teachers/search', {
-    params: { name }
-  });
-  return response.data;
-};
-
-// Course Choosings API
-export const getCourseChoosings = async () => {
-  const response = await api.get<CourseChoosing[]>('/course-choosings');
-  return response.data;
-};
-
-// Registrations API
-export const getRegistrations = async () => {
-  const response = await api.get<CourseChoosing[]>('/registrations');
-  return response.data;
-};
-
-export const createRegistration = async (registration: {
-  studentId: string;
-  courseId: string;
-  teacherId: string;
-  chosenYear: number;
-  score: number | null;
-}) => {
-  const response = await api.post<CourseChoosing>('/registrations', registration);
-  return response.data;
-};
-
-export const updateRegistration = async (
-  studentId: string,
-  courseId: string,
-  updates: { score?: number | null }
-) => {
-  const response = await api.put<CourseChoosing>(
-    `/registrations/${studentId}/${courseId}`,
-    updates
-  );
-  return response.data;
-};
-
-export const deleteRegistration = async (studentId: string, courseId: string) => {
-  await api.delete(`/registrations/${studentId}/${courseId}`);
-};
-
-export const createCourseChoosing = async (
-  studentId: string,
-  courseId: string,
-  teacherId: string,
-  chosenYear: number
-) => {
-  const response = await api.post<CourseChoosing>('/course-choosings', null, {
-    params: { studentId, courseId, teacherId, chosenYear }
-  });
-  return response.data;
-};
-
-export const updateScore = async (id: number, score: number) => {
-  const response = await api.put<CourseChoosing>(`/course-choosings/${id}/score`, null, {
-    params: { score }
-  });
-  return response.data;
-};
-
-export const deleteCourseChoosing = async (id: number) => {
-  await api.delete(`/course-choosings/${id}`);
-};
-
-export const getStudentsByCourse = async (courseId: string, year: number) => {
-  const response = await api.get<Student[]>('/course-choosings/by-course', {
-    params: { courseId, year }
-  });
-  return response.data;
-};
-
-export const getCourseAverageScore = async (courseId: string) => {
-  const response = await api.get<number>('/course-choosings/average-score', {
-    params: { courseId }
-  });
-  return response.data;
-};
-
-export const getAllStudentsAverageScore = async () => {
-  const response = await api.get<number>('/registrations/average-score');
-  return response.data;
-};
-
-export const filterStudentsByScore = async (
-  courseId: string,
-  score: number,
-  greaterThan: boolean
-) => {
-  const response = await api.get<Student[]>('/course-choosings/filter', {
-    params: { courseId, score, greaterThan }
-  });
-  return response.data;
-};
-
-// Add the missing getClassAverageScore function
-export const getClassAverageScore = async (className: string) => {
-  const response = await api.get<number>('/registrations/class-average', {
-    params: { className }
-  });
-  return response.data;
-};
-
-export const getStudentAverageScore = async (studentId: string) => {
-  const response = await api.get<number>(`/registrations/${studentId}/average`);
-  return response.data;
-};
+export default api;
