@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:15
+    container_name: db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - appnet
+
+  backend:
+    container_name: backend
+    build:
+      context: ./cms
+      dockerfile: Dockerfile
+    volumes:
+      - ./cms:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: dbname
+      JWT_SECRET: "your-secret-key"
+      JWT_ALGORITHM: "HS256"
+      JWT_EXPIRE_DAYS: 7
+    networks:
+      - appnet
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./project
+      dockerfile: Dockerfile
+    volumes:
+      - ./project:/app
+    ports:
+      - "5173:5173"
+    stdin_open: true
+    tty: true
+    networks:
+      - appnet
+
+volumes:
+  pgdata:
+
+networks:
+  appnet:
