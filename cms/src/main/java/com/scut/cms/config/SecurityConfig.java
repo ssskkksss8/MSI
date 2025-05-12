@@ -7,11 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 
 @Configuration
 public class SecurityConfig {
@@ -30,31 +26,40 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-          .csrf().disable()
+            .csrf().disable()
+            .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .authorizeHttpRequests()
 
-          .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-          .and()
+                // 🔓 Публичные маршруты
+                .requestMatchers("/auth/**").permitAll()
 
-          .authorizeHttpRequests()
-            .requestMatchers("/auth/**").permitAll()
+                // 🔓 Регистрация студентов, учителей и т.д.
+                .requestMatchers(HttpMethod.POST,
+                    "/api/students/**",
+                    "/api/teachers/**",
+                    "/api/courses/**",
+                    "/api/course-offerings/**"
+                ).permitAll()
 
-            .requestMatchers(HttpMethod.POST,
-                 "/api/students/**",
-                 "/api/teachers/**",
-                 "/api/courses/**",
-                 "/api/course-offerings/**"
-            ).permitAll()
+                // 🔓 Разрешить регистрацию через специальный маршрут (если есть)
+                .requestMatchers(HttpMethod.POST, "/api/register").permitAll()
 
-            .requestMatchers(HttpMethod.GET, "/api/students/**")
-              .hasAnyAuthority("ROLE_STUDENT","ROLE_TEACHER","ROLE_ADMIN")
-            .requestMatchers(HttpMethod.PUT, "/api/course-choosings/*/score")
-              .hasAuthority("ROLE_TEACHER")
-            .requestMatchers("/api/**").hasAuthority("ROLE_ADMIN")
-            .anyRequest().authenticated()
-          .and()
+                // 🔒 Доступ для авторизованных
+                .requestMatchers(HttpMethod.GET, "/api/students/**")
+                    .hasAnyAuthority("ROLE_STUDENT", "ROLE_TEACHER", "ROLE_ADMIN")
 
-          .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .requestMatchers(HttpMethod.PUT, "/api/course-choosings/*/score")
+                    .hasAuthority("ROLE_TEACHER")
+
+                // 🔒 Всё остальное — только для администратора
+                .requestMatchers("/api/**").hasAuthority("ROLE_ADMIN")
+
+                // Любой другой запрос — должен быть авторизован
+                .anyRequest().authenticated()
+            .and()
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

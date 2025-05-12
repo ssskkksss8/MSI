@@ -7,4 +7,13 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://backend:8000', // или 'http://backend:8000' если используешь docker-compose
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });
