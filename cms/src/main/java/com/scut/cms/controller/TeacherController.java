@@ -2,9 +2,14 @@ package com.scut.cms.controller;
 
 import com.scut.cms.model.Teacher;
 import com.scut.cms.repository.TeacherRepository;
+import com.scut.cms.repository.StudentRepository;
+import com.scut.cms.repository.CourseOfferingRepository;
+import com.scut.cms.repository.CourseChoosingRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.scut.cms.model.CourseOffering;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -20,9 +25,25 @@ public class TeacherController {
         this.teacherRepository = teacherRepository;
     }
 
+    @Autowired
+    private StudentRepository studentRepo;
+    @Autowired
+    private CourseChoosingRepository choosingRepo;
+    @Autowired
+    private CourseOfferingRepository offeringRepo;
+
+
     @GetMapping
-    public List<Teacher> getAllTeachers(){
+    public List<Teacher> list(@RequestParam(required = false) String id,
+                            @RequestParam(required = false) String name) {
+        if (id != null) return teacherRepository.findById(id).map(List::of).orElse(List.of());
+        if (name != null) return teacherRepository.findByNameContainingIgnoreCase(name);
         return teacherRepository.findAll();
+    }
+
+    @GetMapping("/{id}/courses")
+    public List<CourseOffering> coursesByTeacher(@PathVariable String id) {
+        return offeringRepo.findByTeacher_Id(id);
     }
 
     @GetMapping("/{id}")

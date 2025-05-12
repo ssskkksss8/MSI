@@ -30,4 +30,9 @@ public class CourseChoosing {
     @Min(0)
     @Max(100)
     private Integer score;
+
+    public Integer getScore() {
+        return score;
+    }
+
 }

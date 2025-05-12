@@ -98,8 +98,8 @@
 				<version>1.12.1</version>
 				<configuration>
 					<workingDirectory>${project.basedir}/../project</workingDirectory>
-					<!-- Или для абсолютного пути: -->
-					<!-- <workingDirectory>/home/kese/china/MSI/project</workingDirectory> -->
+					<nodeVersion>v18.17.0</nodeVersion>  <!-- Укажите нужную версию Node.js -->
+					<npmVersion>9.6.7</npmVersion>       <!-- Опционально: версия npm -->
 				</configuration>
 				<executions>
 					<execution>

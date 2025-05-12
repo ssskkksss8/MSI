@@ -1,50 +1,58 @@
 package com.scut.cms.controller;
 
-import com.scut.cms.model.User;
 import com.scut.cms.model.Role;
-import com.scut.cms.model.Student;
+import com.scut.cms.model.User;
 import com.scut.cms.repository.UserRepository;
-import com.scut.cms.repository.StudentRepository;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
-
 
 @RestController
 @RequestMapping("/auth")
-public class RegistrationController{
-    private final StudentRepository studentRepo;
+public class RegistrationController {
+
     private final UserRepository userRepo;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public RegistrationController(StudentRepository studentRepo,
-                                  UserRepository userRepo,
+    public RegistrationController(UserRepository userRepo,
                                   BCryptPasswordEncoder passwordEncoder) {
-        this.studentRepo = studentRepo;
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
+    // --- DTO класса регистрации ---
+    public static class RegisterRequest {
+        public String username;
+        public String password;
+        public String role; // "STUDENT", "TEACHER", "ADMIN"
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestParam String studentId,
-                                           @RequestParam String password) {
-        Student student = studentRepo.findById(studentId)
-            .orElse(null);
-        if (student == null) {
+    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+        // Проверка: пользователь уже существует?
+        if (userRepo.existsById(request.username)) {
             return ResponseEntity
-                .badRequest()
-                .body("Student with this ID not found");
+                    .badRequest()
+                    .body("User already registered");
         }
-            if (userRepo.existsById(studentId)) {
+
+        // Проверка: корректная ли роль
+        Role selectedRole;
+        try {
+            selectedRole = Role.valueOf("ROLE_" + request.role.toUpperCase()); // ROLE_STUDENT и т.п.
+        } catch (IllegalArgumentException e) {
             return ResponseEntity
-                .badRequest()
-                .body("User already registered");
+                    .badRequest()
+                    .body("Invalid role. Must be STUDENT, TEACHER, or ADMIN");
         }
+
+        // Создание нового пользователя
         User user = new User();
-        user.setUsername(studentId);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole(Role.ROLE_STUDENT);
+        user.setUsername(request.username);
+        user.setPassword(passwordEncoder.encode(request.password));
+        user.setRole(selectedRole);
+
         userRepo.save(user);
 
         return ResponseEntity.ok("Registration completed successfully");

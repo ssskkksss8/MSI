@@ -11,6 +11,8 @@ import com.scut.cms.repository.CourseRepository;
 import com.scut.cms.repository.TeacherRepository;
 import com.scut.cms.service.StudentService; 
 
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -104,6 +106,38 @@ public class CourseChoosingController {
 
         choosing.setScore(score);
         return courseChoosingRepository.save(choosing);
+    }
+
+    @GetMapping("/scores")
+    public List<CourseChoosing> scores(
+            @RequestParam(required = false) String studentId,
+            @RequestParam(required = false) String studentName,
+            @RequestParam(required = false) String courseId,
+            @RequestParam(required = false) String courseName
+    ) {
+        var list = courseChoosingRepository.findAll();
+
+        if (studentId != null) {
+            list = list.stream()
+                    .filter(c -> c.getStudent().getId().equals(studentId))
+                    .collect(Collectors.toList());
+        } else if (studentName != null) {
+            list = list.stream()
+                    .filter(c -> c.getStudent().getName().equalsIgnoreCase(studentName))
+                    .collect(Collectors.toList());
+        }
+
+        if (courseId != null) {
+            list = list.stream()
+                    .filter(c -> c.getCourseOffering().getCourse().getId().equals(courseId))
+                    .collect(Collectors.toList());
+        } else if (courseName != null) {
+            list = list.stream()
+                    .filter(c -> c.getCourseOffering().getCourse().getName().equalsIgnoreCase(courseName))
+                    .collect(Collectors.toList());
+        }
+
+        return list;
     }
 
     @DeleteMapping("/{id}")
