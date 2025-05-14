@@ -8,6 +8,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class SecurityConfig {
@@ -32,35 +34,38 @@ public class SecurityConfig {
             .and()
             .authorizeHttpRequests()
 
-                // 🔓 Публичные маршруты
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("**").permitAll()
 
-                // 🔓 Регистрация студентов, учителей и т.д.
                 .requestMatchers(HttpMethod.POST,
-                    "/api/students/**",
-                    "/api/teachers/**",
-                    "/api/courses/**",
-                    "/api/course-offerings/**"
+                    "**"
                 ).permitAll()
 
-                // 🔓 Разрешить регистрацию через специальный маршрут (если есть)
-                .requestMatchers(HttpMethod.POST, "/api/register").permitAll()
+                // .requestMatchers(HttpMethod.GET, "/students/**")
+                //     .hasAnyAuthority("ROLE_STUDENT", "ROLE_TEACHER", "ROLE_ADMIN")
 
-                // 🔒 Доступ для авторизованных
-                .requestMatchers(HttpMethod.GET, "/api/students/**")
-                    .hasAnyAuthority("ROLE_STUDENT", "ROLE_TEACHER", "ROLE_ADMIN")
+                // .requestMatchers(HttpMethod.PUT, "/course-choosings/*/score")
+                //     .hasAuthority("ROLE_TEACHER")
 
-                .requestMatchers(HttpMethod.PUT, "/api/course-choosings/*/score")
-                    .hasAuthority("ROLE_TEACHER")
+                // .requestMatchers("/**").hasAuthority("ROLE_ADMIN")
 
-                // 🔒 Всё остальное — только для администратора
-                .requestMatchers("/api/**").hasAuthority("ROLE_ADMIN")
-
-                // Любой другой запрос — должен быть авторизован
                 .anyRequest().authenticated()
             .and()
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:5173")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
+            }
+        };
     }
 }

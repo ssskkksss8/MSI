@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { School } from 'lucide-react';
+import { registerUser } from '../../services/api';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -29,7 +30,7 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      await register(username, password, role);
+      await registerUser(username, password, role);
       toast.success('Registration successful! Please log in.');
       navigate('/login');
     } catch (error) {

@@ -1,15 +1,33 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { School } from 'lucide-react';
+import { sayHi } from '../../services/api';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hi, setHi] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+      const fetchStats = async () => {
+        setIsLoading(true);
+        try {
+          const data = await sayHi();
+          setHi(data);
+        } catch (error) {
+          console.error('Error fetching dashboard data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchStats();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +55,9 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
+        <div className="flex justify-center">
+            {hi}
+          </div>
           <div className="flex justify-center">
             <School className="h-12 w-12 text-blue-800" />
           </div>

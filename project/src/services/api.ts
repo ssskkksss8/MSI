@@ -9,6 +9,16 @@ export const api = axios.create({
 });
 
 // Add a request interceptor to attach the token to all requests
+// api.interceptors.request.use(
+//   (config) => {
+//     const token = localStorage.getItem('token');
+//     if (token) {
+//       config.headers['Authorization'] = `Bearer ${token}`;
+//     }
+//     return config;
+//   },
+//   (error) => Promise.reject(error)
+// );
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -17,8 +27,39 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
+
+export const sayHi = async () => {
+  const response = await fetch('/api/auth/hi');
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed');
+  }
+  const data = await response.json();
+  return data.message;
+}
+
+
+export const registerUser = async (username: string, password: string, role: string) => {
+  const response = await fetch('/api/auth/register', {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      username: username,
+      password: password,
+      role: role
+    })
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed');
+  }
+}
 
 // Add a response interceptor to handle errors
 api.interceptors.response.use(

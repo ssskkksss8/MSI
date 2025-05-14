@@ -1,19 +1,24 @@
+// RegistrationController.java
 package com.scut.cms.controller;
 
-import com.scut.cms.model.User;
+import com.scut.cms.dto.RegisterRequest;
 import com.scut.cms.model.Role;
+import java.util.Map;
+import java.util.Collections;
+import com.scut.cms.model.User;
 import com.scut.cms.model.Student;
 import com.scut.cms.repository.UserRepository;
 import com.scut.cms.repository.StudentRepository;
-
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
-
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/auth")
-public class RegistrationController{
+public class RegistrationController {
+
     private final StudentRepository studentRepo;
     private final UserRepository userRepo;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -26,27 +31,33 @@ public class RegistrationController{
         this.passwordEncoder = passwordEncoder;
     }
 
+    @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestParam String studentId,
-                                           @RequestParam String password) {
-        Student student = studentRepo.findById(studentId)
-            .orElse(null);
-        if (student == null) {
-            return ResponseEntity
-                .badRequest()
-                .body("Student with this ID not found");
+    public void register(@RequestBody RegisterRequest req) {
+        System.out.println("");
+        System.out.println("");
+        System.out.println("Received: " + req);
+        System.out.println("");
+        System.out.println("");
+        if (userRepo.existsById(req.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already registered");
         }
-            if (userRepo.existsById(studentId)) {
-            return ResponseEntity
-                .badRequest()
-                .body("User already registered");
-        }
-        User user = new User();
-        user.setUsername(studentId);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole(Role.ROLE_STUDENT);
-        userRepo.save(user);
+        // (по желанию) проверка, что такой студент есть:
+        // Student student = studentRepo.findById(req.getUsername()).orElse(null);
+        // if (student == null && req.getRole().equalsIgnoreCase("STUDENT")) {
+        //     return ResponseEntity.badRequest().body("Student not found");
+        // }
 
-        return ResponseEntity.ok("Registration completed successfully");
+        User user = new User();
+        user.setUsername(req.getUsername());
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setRole(Role.valueOf("ROLE_" + req.getRole().toUpperCase()));
+        userRepo.save(user);
     }
+
+    @GetMapping("/hi")
+    public ResponseEntity<Map<String, String>> sayHi() {
+        return ResponseEntity.ok(Collections.singletonMap("message", "Hi"));
+    }
+
 }
