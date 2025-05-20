@@ -33,7 +33,7 @@ api.interceptors.request.use(
 );
 
 export const sayHi = async () => {
-  const response = await fetch('/api/auth/hi');
+  const response = await fetch('auth/hi');
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || 'Failed');
@@ -44,7 +44,7 @@ export const sayHi = async () => {
 
 
 export const registerUser = async (username: string, password: string, role: string) => {
-  const response = await fetch('/api/auth/register', {
+  const response = await fetch('auth/register', {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
@@ -62,7 +62,7 @@ export const registerUser = async (username: string, password: string, role: str
 }
 
 export const apiLogin = async (username: string, password: string) => {
-  const response = await api.post('/auth/login', { username, password });
+  const response = await api.post('api/auth/login', { username, password });
   return response.data; // Возвращает объект с токеном
 };
 
