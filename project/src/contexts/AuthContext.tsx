@@ -51,13 +51,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (username: string, password: string) => {
     try {
       const response = await api.post('/auth/login', { username, password });
-      const token = response.data;
+      const token = response.data.token; // Извлекаем токен из объекта ответа
+      
+      if (!token) {
+        throw new Error('No token in response');
+      }
       
       // Set token in local storage and API headers
       localStorage.setItem('token', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
-      // Parse token to get user info (you may need to adjust this based on your token structure)
+      // Parse token to get user info (вычисляем данные пользователя из токена)
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(

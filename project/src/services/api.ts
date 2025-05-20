@@ -61,6 +61,12 @@ export const registerUser = async (username: string, password: string, role: str
   }
 }
 
+export const apiLogin = async (username: string, password: string) => {
+  const response = await api.post('/auth/login', { username, password });
+  return response.data; // Возвращает объект с токеном
+};
+
+
 // Add a response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
