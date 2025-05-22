@@ -20,7 +20,7 @@ public class Student {
     @NotBlank(message="Name cannot be empty")
     private String name;
 
-    @Pattern(regexp = "male|female", message = "Gender must be 'male' or 'female'")
+    @Pattern(regexp = "(?i)male|female", message = "Gender must be 'male' or 'female'")
     private String sex; 
 
     @Min(value = 10, message = "Minimum age — 10")

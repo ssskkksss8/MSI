@@ -44,7 +44,7 @@ export const sayHi = async () => {
 
 
 export const registerUser = async (username: string, password: string, role: string) => {
-  const response = await fetch('auth/register', {
+  const response = await fetch('api/auth/register', {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
