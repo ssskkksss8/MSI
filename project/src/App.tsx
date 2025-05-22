@@ -17,6 +17,8 @@ import Footer from './components/layout/Footer';
 import NotFoundPage from './components/common/NotFoundPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import StudentCoursesPage from './components/students/StudentCoursesPage';
+import TeacherCoursePage from './components/teachers/TeacherCoursePage';
 
 function App() {
   return (
@@ -37,6 +39,11 @@ function App() {
               <Route path="/students" element={
                 <PrivateRoute>
                   <StudentsPage />
+                </PrivateRoute>
+              } />
+              <Route path="/my-courses" element={
+                <PrivateRoute>
+                  <StudentCoursesPage />
                 </PrivateRoute>
               } />
               <Route path="/students/:id" element={

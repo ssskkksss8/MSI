@@ -1,56 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
-import { Trash2 } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { useAuth } from '../../contexts/AuthContext'; // Импортируем контекст аутентификации
+
+type Course = {
+  id: string;
+  name: string;
+  credit: number;
+  grade: number;
+};
 
 type Enrollment = {
   id: number;
-  student: { id: string; name: string } | null;
-  courseOffering: {
-    course: { id: string; name: string } | null;
-    teacher: { id: string; name: string } | null;
-  } | null;
+  course: Course;
   chosenYear: number;
   score: number | null;
 };
 
-const EnrollmentsPage = () => {
+const StudentCoursesPage = () => {
+  const { user } = useAuth(); // Получаем текущего пользователя
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth(); // Получаем текущего пользователя из контекста
-  const isAdmin = user?.role === 'ADMIN'; // Проверяем, является ли пользователь администратором
 
   useEffect(() => {
-    fetchEnrollments();
-  }, []);
+    if (user) {
+      fetchStudentCourses(user.id); // Используем ID текущего студента
+    }
+  }, [user]);
 
-  const fetchEnrollments = async () => {
+  const fetchStudentCourses = async (studentId: string) => {
     setIsLoading(true);
     try {
-      const response = await api.get('/course-choosings');
+      const response = await api.get(`/course-choosings/student/${studentId}`);
       setEnrollments(response.data);
     } catch (error) {
-      console.error('Error fetching enrollments:', error);
-      toast.error('Failed to load enrollments');
+      console.error('Error fetching student courses:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this enrollment?')) {
-      return;
-    }
-
-    try {
-      await api.delete(`/course-choosings/${id}`);
-      setEnrollments(enrollments.filter(enrollment => enrollment.id !== id));
-      toast.success('Enrollment deleted successfully');
-    } catch (error) {
-      console.error('Error deleting enrollment:', error);
-      toast.error('Failed to delete enrollment');
     }
   };
 
@@ -60,20 +46,20 @@ const EnrollmentsPage = () => {
 
   return (
     <div className="container mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Enrollments</h1>
+      <h1 className="text-3xl font-bold mb-6">My Courses</h1>
       <div className="bg-white rounded-lg shadow p-6">
         {enrollments.length > 0 ? (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Student
+                  Course Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Course
+                  Credits
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Teacher
+                  Grade
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Year
@@ -81,24 +67,19 @@ const EnrollmentsPage = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Score
                 </th>
-                {isAdmin && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {enrollments.map((enrollment) => (
                 <tr key={enrollment.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {enrollment.student?.name || 'Unknown'}
+                    {enrollment.course.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {enrollment.courseOffering?.course?.name || 'Unknown'}
+                    {enrollment.course.credit}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {enrollment.courseOffering?.teacher?.name || 'Unknown'}
+                    {enrollment.course.grade}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {enrollment.chosenYear}
@@ -106,26 +87,16 @@ const EnrollmentsPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {enrollment.score !== null ? enrollment.score : 'Not graded'}
                   </td>
-                  {isAdmin && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleDelete(enrollment.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </td>
-                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <p className="text-gray-600">No enrollments found.</p>
+          <p className="text-gray-600">You are not enrolled in any courses.</p>
         )}
       </div>
     </div>
   );
 };
 
-export default EnrollmentsPage;
+export default StudentCoursesPage;

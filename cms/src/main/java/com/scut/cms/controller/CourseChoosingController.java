@@ -56,6 +56,10 @@ public class CourseChoosingController {
                                       .toList();
     }
 
+    @GetMapping("/student/{studentId}")
+    public List<CourseChoosing> getCoursesByStudent(@PathVariable String studentId) {
+        return courseChoosingRepository.findByStudent_Id(studentId);
+    }
 
     @GetMapping("/average-score")
     public Double getAverageScore(@RequestParam String courseId) {

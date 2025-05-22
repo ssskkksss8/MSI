@@ -16,7 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("api/auth")
 public class RegistrationController {
 
     private final StudentRepository studentRepo;

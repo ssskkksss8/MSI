@@ -55,6 +55,9 @@ const Navbar = () => {
               <Link to="/enrollments" className="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">
                 Enrollments
               </Link>
+              <Link to="/my-courses" className="text-gray-700 hover:text-gray-900">
+                My Courses
+              </Link>
             </div>
           </div>
           <div className="hidden sm:flex sm:items-center">
