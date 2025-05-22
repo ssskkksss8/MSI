@@ -103,7 +103,12 @@ const StudentForm = ({ initialData, onSubmit }: StudentFormProps) => {
     e.preventDefault();
     
     if (validate()) {
-      onSubmit(formData);
+      // Приведение значения `sex` к нижнему регистру перед отправкой
+      const normalizedData = {
+        ...formData,
+        sex: formData.sex.toLowerCase(),
+      };
+      onSubmit(normalizedData);
     }
   };
 

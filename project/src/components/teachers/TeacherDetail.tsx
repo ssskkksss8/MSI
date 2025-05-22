@@ -1,40 +1,30 @@
-// import React from 'react';
-// import { useParams } from 'react-router-dom';
-
-// const TeacherDetail = () => {
-//   const { id } = useParams();
-
-//   return (
-//     <div className="container mx-auto">
-//       <h1 className="text-3xl font-bold mb-6">Teacher Details</h1>
-//       <div className="bg-white rounded-lg shadow p-6">
-//         <p className="text-gray-600">Teacher details for ID: {id} will be implemented here</p>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default TeacherDetail;
 import React, { useState } from 'react';
 
-type CourseFormProps = {
-  onSubmit: (courseData: { name: string; credit: number; grade: string; canceledYear?: number }) => void;
-  initialData?: { name: string; credit: number; grade: string; canceledYear?: number };
+type TeacherFormProps = {
+  onSubmit: (teacherData: { id?: string; name: string }) => void;
+  initialData?: { id?: string; name: string };
 };
 
-const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, initialData }) => {
+const TeacherForm: React.FC<TeacherFormProps> = ({ onSubmit, initialData }) => {
+  const [id, setId] = useState(initialData?.id || '');
   const [name, setName] = useState(initialData?.name || '');
-  const [credit, setCredit] = useState(initialData?.credit || 0);
-  const [grade, setGrade] = useState(initialData?.grade || '');
-  const [canceledYear, setCanceledYear] = useState(initialData?.canceledYear || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name, credit, grade, canceledYear: canceledYear ? Number(canceledYear) : undefined });
+    onSubmit({ id: id || undefined, name });
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">ID (optional)</label>
+        <input
+          type="text"
+          className="form-input mt-1 block w-full"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+        />
+      </div>
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Name</label>
         <input
@@ -43,35 +33,6 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, initialData }) => {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Credit</label>
-        <input
-          type="number"
-          className="form-input mt-1 block w-full"
-          value={credit}
-          onChange={(e) => setCredit(Number(e.target.value))}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Grade</label>
-        <input
-          type="text"
-          className="form-input mt-1 block w-full"
-          value={grade}
-          onChange={(e) => setGrade(e.target.value)}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Canceled Year (optional)</label>
-        <input
-          type="number"
-          className="form-input mt-1 block w-full"
-          value={canceledYear}
-          onChange={(e) => setCanceledYear(e.target.value)}
         />
       </div>
       <button
@@ -84,4 +45,4 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, initialData }) => {
   );
 };
 
-export default CourseForm;
+export default TeacherForm;

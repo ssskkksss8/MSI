@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
 
 type TeacherFormProps = {
-  onSubmit: (teacherData: { name: string }) => void;
-  initialData?: { name: string };
+  onSubmit: (teacherData: { id?: string; name: string }) => void;
+  initialData?: { id?: string; name: string };
 };
 
 const TeacherForm: React.FC<TeacherFormProps> = ({ onSubmit, initialData }) => {
+  const [id, setId] = useState(initialData?.id || '');
   const [name, setName] = useState(initialData?.name || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name });
+    onSubmit({ id: id || undefined, name });
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">ID</label>
+        <input
+          type="text"
+          className="form-input mt-1 block w-full"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+        />
+      </div>
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Name</label>
         <input

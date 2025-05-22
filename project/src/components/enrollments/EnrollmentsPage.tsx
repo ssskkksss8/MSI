@@ -3,7 +3,7 @@ import api from '../../services/api';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { useAuth } from '../../contexts/AuthContext'; // Импортируем контекст аутентификации
+import { useAuth } from '../../contexts/AuthContext';
 
 type Enrollment = {
   id: number;
@@ -19,8 +19,13 @@ type Enrollment = {
 const EnrollmentsPage = () => {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth(); // Получаем текущего пользователя из контекста
-  const isAdmin = user?.role === 'ADMIN'; // Проверяем, является ли пользователь администратором
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
+  const [studentId, setStudentId] = useState('');
+  const [courseId, setCourseId] = useState('');
+  const [teacherId, setTeacherId] = useState('');
+  const [chosenYear, setChosenYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     fetchEnrollments();
@@ -39,6 +44,31 @@ const EnrollmentsPage = () => {
     }
   };
 
+  const handleAddEnrollment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // Формируем query-параметры
+      const params = new URLSearchParams({
+        studentId,
+        courseId,
+        teacherId,
+        chosenYear: chosenYear.toString(),
+      });
+
+      // Отправляем запрос с query-параметрами
+      await api.post(`/course-choosings?${params.toString()}`);
+      toast.success('Enrollment added successfully');
+      fetchEnrollments(); // Обновляем список зачислений
+      setStudentId('');
+      setCourseId('');
+      setTeacherId('');
+      setChosenYear(new Date().getFullYear());
+    } catch (error) {
+      console.error('Error adding enrollment:', error);
+      toast.error('Failed to add enrollment');
+    }
+  };
+
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this enrollment?')) {
       return;
@@ -46,7 +76,7 @@ const EnrollmentsPage = () => {
 
     try {
       await api.delete(`/course-choosings/${id}`);
-      setEnrollments(enrollments.filter(enrollment => enrollment.id !== id));
+      setEnrollments(enrollments.filter((enrollment) => enrollment.id !== id));
       toast.success('Enrollment deleted successfully');
     } catch (error) {
       console.error('Error deleting enrollment:', error);
@@ -61,6 +91,52 @@ const EnrollmentsPage = () => {
   return (
     <div className="container mx-auto">
       <h1 className="text-3xl font-bold mb-6">Enrollments</h1>
+
+      {isAdmin && (
+        <form onSubmit={handleAddEnrollment} className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input
+              type="text"
+              placeholder="Student ID"
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              className="form-input"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Course ID"
+              value={courseId}
+              onChange={(e) => setCourseId(e.target.value)}
+              className="form-input"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Teacher ID"
+              value={teacherId}
+              onChange={(e) => setTeacherId(e.target.value)}
+              className="form-input"
+              required
+            />
+            <input
+              type="number"
+              placeholder="Year"
+              value={chosenYear}
+              onChange={(e) => setChosenYear(Number(e.target.value))}
+              className="form-input"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Add Enrollment
+          </button>
+        </form>
+      )}
+
       <div className="bg-white rounded-lg shadow p-6">
         {enrollments.length > 0 ? (
           <table className="min-w-full divide-y divide-gray-200">

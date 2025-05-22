@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 
 type CourseFormProps = {
-  onSubmit: (courseData: { name: string; credit: number; grade: string; canceledYear?: number }) => void;
-  initialData?: { name: string; credit: number; grade: string; canceledYear?: number };
+  onSubmit: (courseData: { id?: string; name: string; credit: number; grade: string; canceledYear?: number }) => void;
+  initialData?: { id?: string; name: string; credit: number; grade: string; canceledYear?: number };
 };
 
 const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, initialData }) => {
+  const [id, setId] = useState(initialData?.id || '');
   const [name, setName] = useState(initialData?.name || '');
   const [credit, setCredit] = useState(initialData?.credit || 0);
   const [grade, setGrade] = useState(initialData?.grade || '');
@@ -13,11 +14,20 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSubmit, initialData }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name, credit, grade, canceledYear: canceledYear ? Number(canceledYear) : undefined });
+    onSubmit({ id: id || undefined, name, credit, grade, canceledYear: canceledYear ? Number(canceledYear) : undefined });
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">ID</label>
+        <input
+          type="text"
+          className="form-input mt-1 block w-full"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+        />
+      </div>
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Name</label>
         <input
