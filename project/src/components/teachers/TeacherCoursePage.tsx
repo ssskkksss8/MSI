@@ -37,7 +37,7 @@ const TeacherCoursesPage = () => {
   const fetchTeacherCourses = async (teacherId: string) => {
     setIsLoading(true);
     try {
-      const response = await api.get(`/course-offerings/teacher/${teacherId}`);
+      const response = await api.get(`/api/course-offerings/teacher/${teacherId}`);
       setCourses(response.data);
     } catch (error) {
       console.error('Error fetching teacher courses:', error);

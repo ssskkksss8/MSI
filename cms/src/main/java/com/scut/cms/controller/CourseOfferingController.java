@@ -29,6 +29,11 @@ public class CourseOfferingController {
         return courseOfferingRepository.findAll();
     }
 
+    @GetMapping("/teacher/{teacherId}")
+    public List<CourseOffering> getByTeacher(@PathVariable String teacherId) {
+        return courseOfferingRepository.findByTeacher_Id(teacherId);
+    }
+
     @PostMapping
     public CourseOffering createCourseOffering(@RequestParam String courseId,
                                                 @RequestParam String teacherId,

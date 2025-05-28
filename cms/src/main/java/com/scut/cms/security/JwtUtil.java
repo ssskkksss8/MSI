@@ -10,7 +10,6 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    // Секрет должен быть не короче 32 символов!
     private final SecretKey secretKey = Keys.hmacShaKeyFor("your-very-long-and-secure-secret-key-123456".getBytes());
     private final long validityMs = 24*60*60*1000;
 

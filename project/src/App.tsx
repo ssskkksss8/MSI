@@ -46,6 +46,11 @@ function App() {
                   <StudentCoursesPage />
                 </PrivateRoute>
               } />
+              <Route path="/my-teacher-courses" element={
+                <PrivateRoute>
+                  <TeacherCoursePage />
+                </PrivateRoute>
+              } />
               <Route path="/students/:id" element={
                 <PrivateRoute>
                   <StudentDetail />

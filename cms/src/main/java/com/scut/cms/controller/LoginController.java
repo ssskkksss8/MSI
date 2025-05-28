@@ -30,18 +30,14 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         try {
-            // Authenticate the user
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
 
-            // Load user details
             UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
 
-            // Generate JWT token
             String token = jwtUtil.generateToken(userDetails);
 
-            // Return response
             return ResponseEntity.ok(new LoginResponse(token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(401).body(new LoginResponse("Invalid username or password"));

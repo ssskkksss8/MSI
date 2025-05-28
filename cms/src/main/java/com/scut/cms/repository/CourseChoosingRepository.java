@@ -16,6 +16,14 @@ public interface CourseChoosingRepository extends JpaRepository<CourseChoosing, 
     List<CourseChoosing> findByCourseOffering_Course_IdAndScoreLessThan(String courseId, int maxScore);
 
     List<CourseChoosing> findByStudent_Id(String studentId);
+    @Query("SELECT AVG(c.score) FROM CourseChoosing c WHERE c.student.studentClass = :studentClass")
+    Double averageScoreByClass(@Param("studentClass") String studentClass);
+
+    @Query("SELECT AVG(c.score) FROM CourseChoosing c")
+    Double averageScoreAll();
+
+    @Query("SELECT AVG(c.score) FROM CourseChoosing c WHERE c.student.id = :studentId")
+    Double averageScoreByStudent(@Param("studentId") String studentId);
 
     @Query("SELECT AVG(c.score) FROM CourseChoosing c WHERE c.courseOffering.course.id = :courseId")
     Double calculateAverageScoreByCourseId(@Param("courseId") String courseId);

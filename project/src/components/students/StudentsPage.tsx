@@ -24,6 +24,15 @@ const StudentsPage = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
 
+  // State for averages
+  const [averageStudent, setAverageStudent] = useState<number | null>(null);
+  const [averageAll, setAverageAll] = useState<number | null>(null);
+  const [averageClass, setAverageClass] = useState<number | null>(null);
+  const [averageCourse, setAverageCourse] = useState<number | null>(null);
+  const [classQuery, setClassQuery] = useState('');
+  const [courseQuery, setCourseQuery] = useState('');
+  const [studentQuery, setStudentQuery] = useState('');
+
   useEffect(() => {
     fetchStudents();
   }, []);
@@ -78,12 +87,108 @@ const StudentsPage = () => {
     student.studentClass.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // --- Средние баллы ---
+  const fetchAverageStudent = async () => {
+    if (!studentQuery) return;
+    try {
+      const res = await api.get(`/course-choosings/average-score/student/${studentQuery}`);
+      setAverageStudent(res.data);
+    } catch {
+      setAverageStudent(null);
+      toast.error('Failed to fetch average for student');
+    }
+  };
+
+  const fetchAverageAll = async () => {
+    try {
+      const res = await api.get(`/course-choosings/average-score/all`);
+      setAverageAll(res.data);
+    } catch {
+      setAverageAll(null);
+      toast.error('Failed to fetch average for all students');
+    }
+  };
+
+  const fetchAverageClass = async () => {
+    if (!classQuery) return;
+    try {
+      const res = await api.get(`/course-choosings/average-score/class/${classQuery}`);
+      setAverageClass(res.data);
+    } catch {
+      setAverageClass(null);
+      toast.error('Failed to fetch average for class');
+    }
+  };
+
+  const fetchAverageCourse = async () => {
+    if (!courseQuery) return;
+    try {
+      const res = await api.get(`/course-choosings/average-score/course/${courseQuery}`);
+      setAverageCourse(res.data);
+    } catch {
+      setAverageCourse(null);
+      toast.error('Failed to fetch average for course');
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
   return (
     <div className="max-w-7xl mx-auto">
+      {/* --- Средние баллы --- */}
+      <div className="mb-6 flex flex-wrap gap-4 items-end">
+        <div>
+          <label className="block text-xs">Student ID</label>
+          <input
+            type="text"
+            value={studentQuery}
+            onChange={e => setStudentQuery(e.target.value)}
+            className="form-input"
+            placeholder="Student ID"
+          />
+          <button onClick={fetchAverageStudent} className="ml-2 btn btn-blue">Avg by Student</button>
+          {averageStudent !== null && (
+            <span className="ml-2 text-sm text-gray-700">Avg: {averageStudent?.toFixed(2)}</span>
+          )}
+        </div>
+        <div>
+          <button onClick={fetchAverageAll} className="btn btn-blue">Avg All Students</button>
+          {averageAll !== null && (
+            <span className="ml-2 text-sm text-gray-700">Avg: {averageAll?.toFixed(2)}</span>
+          )}
+        </div>
+        <div>
+          <label className="block text-xs">Class</label>
+          <input
+            type="text"
+            value={classQuery}
+            onChange={e => setClassQuery(e.target.value)}
+            className="form-input"
+            placeholder="Class"
+          />
+          <button onClick={fetchAverageClass} className="ml-2 btn btn-blue">Avg by Class</button>
+          {averageClass !== null && (
+            <span className="ml-2 text-sm text-gray-700">Avg: {averageClass?.toFixed(2)}</span>
+          )}
+        </div>
+        <div>
+          <label className="block text-xs">Course ID</label>
+          <input
+            type="text"
+            value={courseQuery}
+            onChange={e => setCourseQuery(e.target.value)}
+            className="form-input"
+            placeholder="Course ID"
+          />
+          <button onClick={fetchAverageCourse} className="ml-2 btn btn-blue">Avg by Course</button>
+          {averageCourse !== null && (
+            <span className="ml-2 text-sm text-gray-700">Avg: {averageCourse?.toFixed(2)}</span>
+          )}
+        </div>
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Students</h1>
         {isAdmin && (

@@ -18,10 +18,6 @@ public class Course {
     @Column(nullable = false)
     private String name;
 
-    //@ManyToOne
-    //@JoinColumn(name = "teacher_id", nullable = false)
-    //private Teacher teacher;
-
     @Column(nullable = false)
     private int credit;
 

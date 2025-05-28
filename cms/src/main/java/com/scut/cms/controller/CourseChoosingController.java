@@ -61,8 +61,23 @@ public class CourseChoosingController {
         return courseChoosingRepository.findByStudent_Id(studentId);
     }
 
-    @GetMapping("/average-score")
-    public Double getAverageScore(@RequestParam String courseId) {
+    @GetMapping("/average-score/student/{studentId}")
+    public Double getAverageScoreByStudent(@PathVariable String studentId) {
+        return courseChoosingRepository.averageScoreByStudent(studentId);
+    }
+
+    @GetMapping("/average-score/all")
+    public Double getAverageScoreAll() {
+        return courseChoosingRepository.averageScoreAll();
+    }
+
+    @GetMapping("/average-score/class/{studentClass}")
+    public Double getAverageScoreByClass(@PathVariable String studentClass) {
+        return courseChoosingRepository.averageScoreByClass(studentClass);
+    }
+
+    @GetMapping("/average-score/course/{courseId}")
+    public Double getAverageScoreByCourse(@PathVariable String courseId) {
         return courseChoosingRepository.calculateAverageScoreByCourseId(courseId);
     }
 

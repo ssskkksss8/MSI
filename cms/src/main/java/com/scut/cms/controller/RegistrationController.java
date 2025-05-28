@@ -42,7 +42,6 @@ public class RegistrationController {
         if (userRepo.existsById(req.getUsername())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already registered");
         }
-        // (по желанию) проверка, что такой студент есть:
         // Student student = studentRepo.findById(req.getUsername()).orElse(null);
         // if (student == null && req.getRole().equalsIgnoreCase("STUDENT")) {
         //     return ResponseEntity.badRequest().body("Student not found");

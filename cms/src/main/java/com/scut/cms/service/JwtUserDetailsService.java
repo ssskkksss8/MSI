@@ -19,11 +19,9 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Здесь User — ваша доменная сущность com.scut.cms.model.User
         User u = repo.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        // А здесь User — Spring Security UserDetails
         return new org.springframework.security.core.userdetails.User(
             u.getUsername(),
             u.getPassword(),
